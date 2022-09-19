@@ -7,7 +7,44 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const { REST, Routes } = require('discord.js');
 
+// Fonction de logs
+function logger(txt) {
+  var year = (new Date()).getFullYear();
+  var month = (new Date()).getMonth();
+  var day = (new Date()).getDate();
+  var hours = (new Date()).getHours();
+  var minutes = (new Date()).getMinutes();
+  var seconds = (new Date()).getSeconds();
+  if (typeof txt == "string") {
+    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + txt;
+  } else {
+    logger("JSON dans la prochaine ligne : ")
+    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
+  }
+  fs.appendFileSync("logs.txt", logs + "\n")
+  console.log(logs)
+}
+
+// Fonction de logs d'erreurs
+function errlogger(txt) {
+  var year = (new Date()).getFullYear();
+  var month = (new Date()).getMonth();
+  var day = (new Date()).getDate();
+  var hours = (new Date()).getHours();
+  var minutes = (new Date()).getMinutes();
+  var seconds = (new Date()).getSeconds();
+  if (typeof txt == "string") {
+    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + txt;
+  } else {
+    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
+  }
+  fs.appendFileSync("errors.txt", logs + "\n")
+  console.error(logs)
+}
+
 // Importation config
+logger("Pronote Bot JS V0.1")
+logger("Importation de la config")
 let rawconfig = fs.readFileSync('config.json');
 let config = JSON.parse(rawconfig);
 
@@ -72,41 +109,6 @@ const rest = new REST({ version: '10' }).setToken(config.discord.discordtoken);
     errlogger(error);
   }
 })();
-
-// Fonction de logs
-function logger(txt) {
-  var year = (new Date()).getFullYear();
-  var month = (new Date()).getMonth();
-  var day = (new Date()).getDate();
-  var hours = (new Date()).getHours();
-  var minutes = (new Date()).getMinutes();
-  var seconds = (new Date()).getSeconds();
-  if (typeof txt == "string") {
-    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + txt;
-  } else {
-    logger("JSON dans la prochaine ligne : ")
-    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
-  }
-  fs.appendFileSync("logs.txt", logs + "\n")
-  console.log(logs)
-}
-
-// Fonction de logs d'erreurs
-function errlogger(txt) {
-  var year = (new Date()).getFullYear();
-  var month = (new Date()).getMonth();
-  var day = (new Date()).getDate();
-  var hours = (new Date()).getHours();
-  var minutes = (new Date()).getMinutes();
-  var seconds = (new Date()).getSeconds();
-  if (typeof txt == "string") {
-    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + txt;
-  } else {
-    logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
-  }
-  fs.appendFileSync("errors.txt", logs + "\n")
-  console.error(logs)
-}
 
 // Fonction login
 async function login(grp) {
