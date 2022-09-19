@@ -22,7 +22,7 @@ function logger(txt) {
     logger("JSON dans la prochaine ligne : ")
     logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
   }
-  fs.appendFileSync("logs.txt", logs + "\n")
+  fs.appendFileSync("./logs/logs/logs.txt", logs + "\n")
   console.log(logs)
 }
 
@@ -39,11 +39,35 @@ function errlogger(txt) {
   } else {
     logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
   }
-  fs.appendFileSync("errors.txt", logs + "\n")
+  fs.appendFileSync("./logs/errors/errors.txt", logs + "\n")
   console.error(logs)
 }
 
-// Importation config
+// Check if logs file exists and rename it
+if (fs.existsSync('./logs/logs/logs.txt')) {
+  fs.stat('./logs/logs/logs.txt', (err, stats) => {
+    if(err) {
+        throw err;
+    }
+    tt = stats.ctimeMs
+    fs.rename('./logs/logs/logs.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
+      if ( err ) console.log('ERROR: ' + err);
+    });
+})}
+
+// Check if errors file exists and rename it
+if (fs.existsSync('./logs/logs/errors.txt')) {
+  fs.stat('./logs/logs/errors.txt', (err, stats) => {
+    if(err) {
+        throw err;
+    }
+    tt = stats.ctimeMs
+    fs.rename('./logs/logs/errors.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
+      if ( err ) console.log('ERROR: ' + err);
+    });
+})}
+
+// Importation config / Init
 logger("Pronote Bot JS V0.1")
 logger("Importation de la config")
 let rawconfig = fs.readFileSync('config.json');
@@ -74,7 +98,6 @@ client.on('interactionCreate', async interaction => {
       ttjson = await gettimetables(interaction.options._hoistedOptions[0].value)
       ttjson.forEach(async element => {
         if (element.isCancelled == false || element.isDetention == false || element.isAway == false) {
-          logger("Doin Embeds")
           const emebededs = new EmbedBuilder()
 	        .setColor(hexstrtohexint(element.color))
 	        .setTitle(element.subject)
