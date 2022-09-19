@@ -6,6 +6,7 @@ const c = require('ansi-colors');
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const { REST, Routes } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 // Fonction de logs
 function logger(txt) {
@@ -55,8 +56,11 @@ client.on('ready', async () => {
 
 // Code a exec en fonction des commandes
 client.on('interactionCreate', async interaction => {
+
+  // Verifie si slash commande
   if (!interaction.isChatInputCommand()) return;
 
+  // Commande "edt"
   if (interaction.commandName === 'edt') {
     dont = 0
     try {
@@ -67,10 +71,22 @@ client.on('interactionCreate', async interaction => {
     }
     if ( dont == !1 ){
       await interaction.reply({ content: `Envoi de l\'emploi du temps du groupe ${interaction.options._hoistedOptions[0].value}` });
-      logger(await gettimetables(interaction.options._hoistedOptions[0].value))
+      ttjson = await gettimetables(interaction.options._hoistedOptions[0].value)
+      ttjson.forEach(async element => {
+        if (element.isCancelled == false || element.isDetention == false || element.isAway == false) {
+          logger("Doin Embeds")
+          const emebededs = new EmbedBuilder()
+	        .setColor(hexstrtohexint(element.color))
+	        .setTitle(element.subject)
+	        .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \n A Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
+
+          await interaction.channel.send({ embeds: [emebededs] });
+      }
+      });
       dont == 0
     }
   }
+
 });
 
 // Définitions des commandes
@@ -110,6 +126,15 @@ const rest = new REST({ version: '10' }).setToken(config.discord.discordtoken);
   }
 })();
 
+// Fonction conversion hex string en hex int
+function hexstrtohexint(hexStr) {
+  return Number(`0x${hexStr.substr(1)}`);
+}
+
+function truetovrai(inp){
+  if (inp == true) { return "Oui" } else if (inp == false) {return "Non"}
+}
+
 // Fonction login
 async function login(grp) {
   const session = await pronote.login(config.pronoteurl, config.group[grp].username, config.group[grp].password);
@@ -145,13 +170,13 @@ async function main() {
 
 function smain() {
   main().catch(err => {
-    if (err.code === pronote.errors.WRONG_CREDENTIALS.code) {
+    if (err.code == pronote.errors.WRONG_CREDENTIALS.code) {
       errlogger(c.red('Mauvais identifiants'));
       smain()
-    } else if (err.code === 'ENOTFOUND') {
+    } else if (err.code == 'ENOTFOUND' || err.code == 'ECONNRESET' || err.syscall == "getaddrinfo") {
       errlogger(c.red('Pas de connexion internet !'));
       smain()
-    } else if (err.code === "UND_ERR_CONNECT_TIMEOUT") {
+    } else if (err.code == "UND_ERR_CONNECT_TIMEOUT") {
       errlogger(c.red('Time Out!'));
       smain()
     } else {
