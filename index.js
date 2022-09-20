@@ -22,7 +22,7 @@ function logger(txt) {
     logger("JSON dans la prochaine ligne : ")
     logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
   }
-  fs.appendFileSync("./logs/logs/logs.txt", logs + "\n")
+  fs.appendFileSync("./logs/logs/latest.txt", logs + "\n")
   console.log(logs)
 }
 
@@ -39,36 +39,36 @@ function errlogger(txt) {
   } else {
     logs = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ` + JSON.stringify(txt);
   }
-  fs.appendFileSync("./logs/errors/errors.txt", logs + "\n")
+  fs.appendFileSync("./logs/errors/latest.txt", logs + "\n")
   console.error(logs)
 }
 
 // Check if logs file exists and rename it
-if (fs.existsSync('./logs/logs/logs.txt')) {
-  fs.stat('./logs/logs/logs.txt', (err, stats) => {
+if (fs.existsSync('./logs/logs/latest.txt')) {
+  fs.stat('./logs/logs/latest.txt', (err, stats) => {
     if(err) {
         throw err;
     }
     tt = stats.ctimeMs
-    fs.rename('./logs/logs/logs.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
+    fs.rename('./logs/logs/latest.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
       if ( err ) console.log('ERROR: ' + err);
     });
 })}
 
 // Check if errors file exists and rename it
-if (fs.existsSync('./logs/logs/errors.txt')) {
-  fs.stat('./logs/logs/errors.txt', (err, stats) => {
+if (fs.existsSync('./logs/logs/latest.txt')) {
+  fs.stat('./logs/logs/latest.txt', (err, stats) => {
     if(err) {
         throw err;
     }
     tt = stats.ctimeMs
-    fs.rename('./logs/logs/errors.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
+    fs.rename('./logs/logs/latest.txt', `./logs/logs/${new Date(tt).getFullYear()}-${new Date(tt).getMonth()}-${new Date(tt).getDate()} ${new Date(tt).getHours()}.${new Date(tt).getMinutes()}.${new Date(tt).getSeconds()}.txt`, function(err) {
       if ( err ) console.log('ERROR: ' + err);
     });
 })}
 
 // Importation config / Init
-logger("Pronote Bot JS V0.1")
+logger("Pronote Bot JS V0.2")
 logger("Importation de la config")
 let rawconfig = fs.readFileSync('config.json');
 let config = JSON.parse(rawconfig);
@@ -86,6 +86,7 @@ client.on('interactionCreate', async interaction => {
 
   // Commande "edt"
   if (interaction.commandName === 'edt') {
+    lasttimes = 0
     dont = 0
     try {
       opt = interaction.options._hoistedOptions[0].value
@@ -96,14 +97,26 @@ client.on('interactionCreate', async interaction => {
     if ( dont == !1 ){
       await interaction.reply({ content: `Envoi de l\'emploi du temps du groupe ${interaction.options._hoistedOptions[0].value}` });
       ttjson = await gettimetables(interaction.options._hoistedOptions[0].value)
-      ttjson.forEach(async element => {
+      ttjson.forEach(element => {
         if (element.isCancelled == false || element.isDetention == false || element.isAway == false) {
-          const emebededs = new EmbedBuilder()
-	        .setColor(hexstrtohexint(element.color))
-	        .setTitle(element.subject)
-	        .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \n A Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
+          if (new Date(element.from).getTime()/1000 - lasttimes > 60200) {
+            interaction.channel.send({ content: `Cours pour le <t:${new Date(element.from).getTime()/1000}:D> : ` })
+            const emebededs = new EmbedBuilder()
+	          .setColor(hexstrtohexint(element.color))
+	          .setTitle(element.subject)
+	          .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \n A Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
 
-          await interaction.channel.send({ embeds: [emebededs] });
+            interaction.channel.send({ embeds: [emebededs] });
+            lasttimes = new Date(element.from).getTime()/1000
+          } else {
+            const emebededs = new EmbedBuilder()
+	          .setColor(hexstrtohexint(element.color))
+	          .setTitle(element.subject)
+	          .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \n A Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
+
+            interaction.channel.send({ embeds: [emebededs] });
+            lasttimes = new Date(element.from).getTime()/1000
+        }
       }
       });
       dont == 0
