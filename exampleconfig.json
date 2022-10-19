@@ -1,0 +1,24 @@
+{
+    // This is an example file, enter your config then delete this line
+    "pronoteurl": "YOUR_PRONOTE_URL",
+    "discord": {
+        "discordtoken": "YOUR_DISCORD_TOKEN",
+        "guildid": [YOUR_GUILD_ID],
+        "sendmenu": true,
+        "menuchannel": "CHANNEL_TO_SEND_MENU"
+    },
+    "group": {
+        "1": {
+            "username": "USERNAME_FOR_GROUP1",
+            "password": "PASSWORD_FOR_GROUP1",
+            "homeworks": "CHANNEL_TO_SEND_HOMEWORKS_FOR_GROUP1",
+            "timetables": "CHANNEL_TO_SEND_TIMETABLES_FOR_GROUP1"
+        },
+        "2": {
+            "username": "USERNAME_FOR_GROUP2",
+            "password": "PASSWORD_FOR_GROUP2",
+            "homeworks": "CHANNEL_TO_SEND_HOMEWORKS_FOR_GROUP2",
+            "timetables": "CHANNEL_TO_SEND_TIMETABLES_FOR_GROUP2"
+        }
+    }
+}

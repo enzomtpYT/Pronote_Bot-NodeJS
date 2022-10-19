@@ -1,4 +1,4 @@
-async function main(){
+async function mmain(){
 
   //Importation des lib
   const pronote = require('@dorian-eydoux/pronote-api');
@@ -9,6 +9,7 @@ async function main(){
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
   const { REST, Routes } = require('discord.js');
   const { EmbedBuilder } = require('discord.js');
+  const CronJob = require('cron').CronJob;
 
   // Fonction de logs
   function logger(txt) {
@@ -45,6 +46,11 @@ async function main(){
     console.error(logs)
   }
 
+  function dscsend(channel, msg){
+    logger(`Sending ${msg} to ${channel}`)
+    client.channels.cache.get(channel).send(msg)
+  }
+
   // Check if logs file exists and rename it
   if (fs.existsSync('./logs/logs/latest.txt')) {
     fs.stat('./logs/logs/latest.txt', (err, stats) => {
@@ -70,7 +76,7 @@ async function main(){
   })}
 
   // Importation config / Init
-  logger("Pronote Bot JS V0.4")
+  logger("Pronote Bot JS V0.4.1")
   logger("Importation de la config")
   let rawconfig = fs.readFileSync('config.json');
   let config = JSON.parse(rawconfig);
@@ -80,7 +86,7 @@ async function main(){
   // Fonction login
   async function login(grp) {
     const session = await pronote.login(config.pronoteurl, config.group[grp].username, config.group[grp].password);
-    logger("Bot connecté en tant que : " + session.user.name)
+    logger("Pronote connecté en tant que : " + session.user.name)
     return session
   }
 
@@ -127,6 +133,47 @@ async function main(){
   // On ready Bot
   client.on('ready', async () => {
     logger(`Bot connecté en tant que : ${client.user.tag}!`)
+    if (config.discord.sendmenu = true) {
+      new CronJob(
+        '0 55 7 * * *',
+        async function() {
+          menujson = await getmenu()
+          const menuembed = new EmbedBuilder()
+  	      .setColor(0x0099FF)
+  	      .setTitle('Menu Du Jour')
+          try {
+            index = 0
+            menujson[0].meals[0].forEach(element => {
+              str = ''
+              element.forEach(element =>{
+                str += element.name + '\n'
+              })
+              if (index == 0){
+                now = "Entrée"
+              } else if (index == 1){
+                now = "Viandes"
+              } else if (index == 2){
+                now = "Féculents"
+              } else if (index == 3){
+                now = "Laitages"
+              } else if (index == 4){
+                now = "Desserts"
+              }
+              menuembed.addFields({ name: now, value: str, inline: true })
+              index += 1
+            })
+          } catch {
+            td1 = new Date();
+            td1.setDate(td1.getDate() - 1);
+            interaction.channel.send({content: `Aucun json reçu <t:${Math.floor(td1.getTime()/1000)}>`})
+          }
+          dscsend(config.discord.menuchannel, { embeds: [menuembed] })
+        },
+        null,
+        true,
+        'Europe/Paris'
+      );
+    }
   });
 
   // Code a exec en fonction des commandes
@@ -225,7 +272,6 @@ async function main(){
             } else if (index == 4){
               now = "Desserts"
             }
-            logger(now + " : \n" + str)
             menuembed.addFields({ name: now, value: str, inline: true })
             index += 1
           })
@@ -234,7 +280,6 @@ async function main(){
           td1.setDate(td1.getDate() - 1);
           interaction.channel.send({content: `Aucun json reçu <t:${Math.floor(td1.getTime()/1000)}>`})
         }
-        // menuembed.setDescription('')
         interaction.channel.send({ embeds: [menuembed] });
       }
 
@@ -334,4 +379,4 @@ async function main(){
   smain()
 
 }
-main()
+mmain()
