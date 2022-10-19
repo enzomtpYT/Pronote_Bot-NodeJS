@@ -70,7 +70,7 @@ async function main(){
   })}
 
   // Importation config / Init
-  logger("Pronote Bot JS V0.3")
+  logger("Pronote Bot JS V0.4")
   logger("Importation de la config")
   let rawconfig = fs.readFileSync('config.json');
   let config = JSON.parse(rawconfig);
@@ -149,7 +149,7 @@ async function main(){
         await interaction.reply({ content: `Envoi de l\'emploi du temps du groupe ${interaction.options._hoistedOptions[0].value}` });
         ttjson = await gettimetables(interaction.options._hoistedOptions[0].value)
         ttjson.forEach(element => {
-          if (element.isCancelled == false || element.isDetention == false || element.isAway == false) {
+          if (element.isCancelled == false && element.isDetention == false && element.isAway == false) {
             if (new Date(element.from).getTime()/1000 - lasttimes > 60200) {
               interaction.channel.send({ content: `Cours pour le <t:${new Date(element.from).getTime()/1000}:D> : ` })
               const emebededs = new EmbedBuilder()
@@ -188,7 +188,7 @@ async function main(){
           await interaction.reply({ content: `Envoi des devoirs pour le groupe ${interaction.options._hoistedOptions[0].value}` });
           hwjson = await gethomeworks(interaction.options._hoistedOptions[0].value)
           td1 = new Date();
-          td1.setDate(fromd.getDate() - 1);
+          td1.setDate(td1.getDate() - 1);
           hwjson.forEach(element => {
             const emebededs = new EmbedBuilder()
             .setColor(hexstrtohexint(element.color))
@@ -204,29 +204,38 @@ async function main(){
       if (interaction.commandName === 'menu') {
         await interaction.reply({ content: `Envoi du Menu` });
         menujson = await getmenu()
-        // const menuembed = new EmbedBuilder()
-  	    // .setColor(0x0099FF)
-  	    // .setTitle('Menu Du Jour')
-  	    // .setDescription('Some description here')
-  	    // .setImage('https://i.imgur.com/AfFp7pu.png')
-  	    // .setTimestamp()
-  	    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+        const menuembed = new EmbedBuilder()
+  	    .setColor(0x0099FF)
+  	    .setTitle('Menu Du Jour')
         try {
+          index = 0
           menujson[0].meals[0].forEach(element => {
+            str = ''
             element.forEach(element =>{
-            
+              str += element.name + '\n'
             })
-          
-
-          logger(element)
-          // emebededs.addFields({ name: 'Inline field title', value: 'Some value here', inline: true })
+            if (index == 0){
+              now = "Entrée"
+            } else if (index == 1){
+              now = "Viandes"
+            } else if (index == 2){
+              now = "Féculents"
+            } else if (index == 3){
+              now = "Laitages"
+            } else if (index == 4){
+              now = "Desserts"
+            }
+            logger(now + " : \n" + str)
+            menuembed.addFields({ name: now, value: str, inline: true })
+            index += 1
           })
         } catch {
           td1 = new Date();
           td1.setDate(td1.getDate() - 1);
           interaction.channel.send({content: `Aucun json reçu <t:${Math.floor(td1.getTime()/1000)}>`})
         }
-        // interaction.channel.send({ embeds: [menuembed] });
+        // menuembed.setDescription('')
+        interaction.channel.send({ embeds: [menuembed] });
       }
 
 
