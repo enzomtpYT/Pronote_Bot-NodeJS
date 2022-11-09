@@ -46,6 +46,7 @@ async function mmain(){
     console.error(logs)
   }
 
+  // Function to send messages
   function dscsend(channel, msg){
     logger(`Sending ${msg} to ${channel}`)
     client.channels.cache.get(channel).send(msg)
@@ -83,6 +84,13 @@ async function mmain(){
   session1 = ""
   session2 = ""
 
+  // Check if data file exists
+  if (!(fs.existsSync('data.json'))) {
+    fs.writeFileSync('data.json', '{ "ids" : [] }')
+  }
+  let rawdata = fs.readFileSync('data.json');
+  let data = JSON.parse(rawdata);
+
   // Fonction login
   async function login(grp) {
     const session = await pronote.login(config.pronoteurl, config.group[grp].username, config.group[grp].password);
@@ -103,6 +111,7 @@ async function mmain(){
     return timetablesgot
   }
 
+  // Fonction qui permet d'obtenir les devoirs
   async function gethomeworks(grp) {
     if (grp == "1") {
       session = session1
@@ -115,6 +124,7 @@ async function mmain(){
     return homeworksgot
   }
 
+  // Fonction qui permet d'obtenir le menu
   async function getmenu() {
     session = session2
     logger("Obtention du menu en tant que : " + session.user.name)
@@ -125,6 +135,7 @@ async function mmain(){
     return menugot
   }
 
+  // Register les sessions
   session1 = await login("1")
   session2 = await login("2")
   session1.setKeepAlive(true);
@@ -133,9 +144,12 @@ async function mmain(){
   // On ready Bot
   client.on('ready', async () => {
     logger(`Bot connecté en tant que : ${client.user.tag}!`)
+    client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
+
+    // Schedule task for the menu
     if (config.discord.sendmenu = true) {
       new CronJob(
-        '0 55 7 * * *',
+        '0 55 7 * * 1-5',
         async function() {
           menujson = await getmenu()
           const menuembed = new EmbedBuilder()
@@ -174,6 +188,17 @@ async function mmain(){
         'Europe/Paris'
       );
     }
+
+    // Send menu to every pp
+    new CronJob(
+      '*/6 * * * * 1-5',
+      async function() {
+      },
+      null,
+      true,
+      'Europe/Paris'
+    );
+
   });
 
   // Code a exec en fonction des commandes
@@ -181,6 +206,31 @@ async function mmain(){
 
     // Verifie si slash commande
     if (!interaction.isChatInputCommand()) return;
+
+    // Commande "edtdm"
+    if (interaction.commandName === 'edtdm') {
+
+      isin = false
+
+      await interaction.reply({ content: 'Verification', ephemeral: true });
+
+      data.ids.forEach(element =>{
+        if (element == interaction.user.id){
+          isin = true
+        }
+      })
+        
+      if (isin == false){
+        data.ids.push(interaction.user.id)
+        fs.writeFileSync('data.json', JSON.stringify(data))
+        await interaction.editReply({ content: 'Ajouté à la liste !', ephemeral: true });
+        logger("L'Utilisateur a été ajouté a la liste")
+      } else {
+        await interaction.editReply({ content: 'Vous êtes déja dans la liste !', ephemeral: true });
+        logger("Utilisateur déja présent dans la liste")
+      }
+
+    }
 
     // Commande "edt"
     if (interaction.commandName === 'edt') {
@@ -234,13 +284,16 @@ async function mmain(){
         if ( dont == !1 ){
           await interaction.reply({ content: `Envoi des devoirs pour le groupe ${interaction.options._hoistedOptions[0].value}` });
           hwjson = await gethomeworks(interaction.options._hoistedOptions[0].value)
-          td1 = new Date();
-          td1.setDate(td1.getDate() - 1);
           hwjson.forEach(element => {
+            urls = ""
+            element.files.forEach(element => {
+              urls += `[${element.name}](${element.url})\n`
+            })
             const emebededs = new EmbedBuilder()
             .setColor(hexstrtohexint(element.color))
             .setTitle(element.subject)
-            .setDescription(`Description : ${element.description} \nA rendre pour le : <t:${td1.getTime()/1000}:D> \nDonné le : <t:${new Date(element.givenAt).getTime()/1000}:D>`)
+            .setDescription(`Description : ${element.description} \nA rendre pour le : <t:${new Date(element.for).getTime()/1000}:D> \nDonné le : <t:${new Date(element.givenAt).getTime()/1000}:D>`)
+            .addFields({ name: "Fichiers : ", value: urls, inline: false })
 
             interaction.channel.send({ embeds: [emebededs] });
           });
@@ -306,6 +359,10 @@ async function mmain(){
           }
         ],
       }]
+    },
+    {
+      name: 'edtdm',
+      description: 'Vous ajoute a la liste des devoirs a envoyer en DM'
     },
     {
       name: 'devoirs',
