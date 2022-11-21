@@ -144,13 +144,13 @@ async function mmain(){
   // On ready Bot
   client.on('ready', async () => {
     logger(`Bot connecté en tant que : ${client.user.tag}!`)
-    client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
 
     // Schedule task for the menu
     if (config.discord.sendmenu = true) {
       new CronJob(
         '0 55 7 * * 1-5',
         async function() {
+          client.user.setStatus("online");
           menujson = await getmenu()
           const menuembed = new EmbedBuilder()
   	      .setColor(0x0099FF)
@@ -182,55 +182,22 @@ async function mmain(){
             interaction.channel.send({content: `Aucun json reçu <t:${Math.floor(td1.getTime()/1000)}>`})
           }
           dscsend(config.discord.menuchannel, { embeds: [menuembed] })
+          client.user.setStatus("idle");
         },
         null,
         true,
         'Europe/Paris'
       );
     }
-
-    // Send menu to every pp
-    new CronJob(
-      '*/6 * * * * 1-5',
-      async function() {
-      },
-      null,
-      true,
-      'Europe/Paris'
-    );
-
+    client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
   });
 
   // Code a exec en fonction des commandes
   client.on('interactionCreate', async interaction => {
+    client.user.setStatus("online");
 
     // Verifie si slash commande
     if (!interaction.isChatInputCommand()) return;
-
-    // Commande "edtdm"
-    if (interaction.commandName === 'edtdm') {
-
-      isin = false
-
-      await interaction.reply({ content: 'Verification', ephemeral: true });
-
-      data.ids.forEach(element =>{
-        if (element == interaction.user.id){
-          isin = true
-        }
-      })
-        
-      if (isin == false){
-        data.ids.push(interaction.user.id)
-        fs.writeFileSync('data.json', JSON.stringify(data))
-        await interaction.editReply({ content: 'Ajouté à la liste !', ephemeral: true });
-        logger("L'Utilisateur a été ajouté a la liste")
-      } else {
-        await interaction.editReply({ content: 'Vous êtes déja dans la liste !', ephemeral: true });
-        logger("Utilisateur déja présent dans la liste")
-      }
-
-    }
 
     // Commande "edt"
     if (interaction.commandName === 'edt') {
@@ -336,7 +303,7 @@ async function mmain(){
         interaction.channel.send({ embeds: [menuembed] });
       }
 
-
+      client.user.setStatus("idle");
   });
 
   // Définitions des commandes
@@ -361,10 +328,6 @@ async function mmain(){
       }]
     },
     {
-      name: 'edtdm',
-      description: 'Vous ajoute a la liste des devoirs a envoyer en DM'
-    },
-    {
       name: 'devoirs',
       description: 'Envoye les devoirs',
       options: [{
@@ -386,7 +349,7 @@ async function mmain(){
     {
       name: 'menu',
       description: 'Envoye le menu',
-    },
+    }
   ];
 
   // Refresh les commandes a discord
