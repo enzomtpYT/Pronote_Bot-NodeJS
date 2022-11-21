@@ -1,5 +1,0 @@
-[2022-10-9 10h58m10s] > Pronote connecté en tant que : BREEMEERSCH Aloïs
-[2022-10-9 10h58m17s] > Pronote connecté en tant que : JORÉ Enzo
-[2022-10-9 10h58m17s] > Started refreshing application (/) commands.
-[2022-10-9 10h58m19s] > Successfully reloaded application (/) commands.
-[2022-10-9 10h58m25s] > Bot connecté en tant que : PronoteBot Beta#3584!
