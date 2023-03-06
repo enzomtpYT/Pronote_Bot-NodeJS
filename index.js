@@ -179,7 +179,7 @@ async function mmain(){
           } catch {
             td1 = new Date();
             td1.setDate(td1.getDate() - 1);
-            interaction.channel.send({content: `Aucun json reçu <t:${Math.floor(td1.getTime()/1000)}>`})
+            dscsend(config.discord.menuchannel, {content: `Aucun json pour le menu reçu <t:${Math.floor(td1.getTime()/1000)}>`})
           }
           dscsend(config.discord.menuchannel, { embeds: [menuembed] })
           client.user.setStatus("idle");
@@ -214,7 +214,7 @@ async function mmain(){
         ttjson = await gettimetables(interaction.options._hoistedOptions[0].value)
         ttjson.forEach(element => {
           if (element.isCancelled == false && element.isDetention == false && element.isAway == false) {
-            if (new Date(element.from).getTime()/1000 - lasttimes > 60200) {
+            if (new Date(element.from).getTime()/1000 - lasttimes >= 53400) {
               interaction.channel.send({ content: `Cours pour le <t:${new Date(element.from).getTime()/1000}:D> : ` })
               const emebededs = new EmbedBuilder()
   	          .setColor(hexstrtohexint(element.color))
@@ -222,7 +222,7 @@ async function mmain(){
   	          .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \nA Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
 
               interaction.channel.send({ embeds: [emebededs] });
-              lasttimes = new Date(element.from).getTime()/1000
+              lasttimes = new Date(element.to).getTime()/1000
             } else {
               const emebededs = new EmbedBuilder()
   	          .setColor(hexstrtohexint(element.color))
@@ -230,7 +230,7 @@ async function mmain(){
   	          .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \nA Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
 
               interaction.channel.send({ embeds: [emebededs] });
-              lasttimes = new Date(element.from).getTime()/1000
+              lasttimes = new Date(element.to).getTime()/1000
           }
         }
         });
