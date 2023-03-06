@@ -216,14 +216,7 @@ async function mmain(){
           if (element.isCancelled == false && element.isDetention == false && element.isAway == false) {
             if (new Date(element.from).getTime()/1000 - lasttimes >= 53400) {
               interaction.channel.send({ content: `Cours pour le <t:${new Date(element.from).getTime()/1000}:D> : ` })
-              const emebededs = new EmbedBuilder()
-  	          .setColor(hexstrtohexint(element.color))
-  	          .setTitle(element.subject)
-  	          .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \nA Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
-
-              interaction.channel.send({ embeds: [emebededs] });
-              lasttimes = new Date(element.to).getTime()/1000
-            } else {
+            }
               const emebededs = new EmbedBuilder()
   	          .setColor(hexstrtohexint(element.color))
   	          .setTitle(element.subject)
@@ -232,7 +225,6 @@ async function mmain(){
               interaction.channel.send({ embeds: [emebededs] });
               lasttimes = new Date(element.to).getTime()/1000
           }
-        }
         });
         dont == 0
       }
@@ -252,15 +244,19 @@ async function mmain(){
           await interaction.reply({ content: `Envoi des devoirs pour le groupe ${interaction.options._hoistedOptions[0].value}` });
           hwjson = await gethomeworks(interaction.options._hoistedOptions[0].value)
           hwjson.forEach(element => {
-            urls = ""
-            element.files.forEach(element => {
-              urls += `[${element.name}](${element.url})\n`
-            })
+            if (element.files[0]){
+              urls = ""
+              element.files.forEach(element => {
+                urls += `[${element.name}](${element.url})\n`
+              })
+            }
             const emebededs = new EmbedBuilder()
             .setColor(hexstrtohexint(element.color))
             .setTitle(element.subject)
             .setDescription(`Description : ${element.description} \nA rendre pour le : <t:${new Date(element.for).getTime()/1000}:D> \nDonné le : <t:${new Date(element.givenAt).getTime()/1000}:D>`)
-            .addFields({ name: "Fichiers : ", value: urls, inline: false })
+            if (element.files[0]){
+              emebededs.addFields({ name: "Fichiers : ", value: urls, inline: false })
+            }
 
             interaction.channel.send({ embeds: [emebededs] });
           });
