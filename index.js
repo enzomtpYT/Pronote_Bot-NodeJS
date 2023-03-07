@@ -81,7 +81,7 @@ async function mmain(){
   })}
 
   // Importation config / Init
-  logger("Pronote Bot JS V0.4.1")
+  logger("Pronote Bot JS V0.5.0")
   logger("Importation de la config")
   let rawconfig = fs.readFileSync('config.json');
   let config = JSON.parse(rawconfig);
