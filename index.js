@@ -47,8 +47,12 @@ async function mmain(){
   }
 
   // Function to send messages
-  function dscsend(channel, msg){
-    logger(`Sending ${msg} to ${channel}`)
+  async function dscsend(channel, msg){
+    if (msg.content) {
+      logger(`Sending ${msg.content} to ${channel}`)
+    } else {
+      logger(`Sending ${JSON.stringify(msg)} to ${channel}`)
+    }
     client.channels.cache.get(channel).send(msg)
   }
 
@@ -148,7 +152,7 @@ async function mmain(){
     // Schedule task for the menu
     if (config.discord.sendmenu = true) {
       new CronJob(
-        '0 55 7 * * 1-5',
+        '0 45 7 * * 1-5',
         async function() {
           client.user.setStatus("online");
           menujson = await getmenu()
@@ -179,17 +183,75 @@ async function mmain(){
           } catch {
             td1 = new Date();
             td1.setDate(td1.getDate() - 1);
-            dscsend(config.discord.menuchannel, {content: `Aucun json pour le menu reçu <t:${Math.floor(td1.getTime()/1000)}>`})
+            await dscsend(config.discord.menuchannel, {content: `Aucun json pour le menu reçu <t:${Math.floor(td1.getTime()/1000)}>`})
           }
-          dscsend(config.discord.menuchannel, { embeds: [menuembed] })
-          client.user.setStatus("idle");
+          await dscsend(config.discord.menuchannel, { embeds: [menuembed] })
+          client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
         },
         null,
         true,
         'Europe/Paris'
       );
     }
-    client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
+
+    // Schedule task for "edt"
+    new CronJob(
+      '0 45 7 * * 1-5',
+      async function() {
+        for (let groupe = 1; groupe < 3; groupe++) {
+          lasttimes = 0
+          ttjson = await gettimetables(groupe)
+          ttjson.forEach(async element => {
+            if (element.isCancelled == false && element.isDetention == false && element.isAway == false) {
+              if (new Date(element.from).getTime()/1000 - lasttimes >= 53400) {
+                await dscsend(config.group[groupe].timetables, { content: `Cours pour le <t:${new Date(element.from).getTime()/1000}:D> : ` })
+              }
+                const emebededs = new EmbedBuilder()
+                .setColor(hexstrtohexint(element.color))
+                .setTitle(element.subject)
+                .setDescription(`Salle : ${element.room} \nAvec : ${element.teacher} \nA Distance : ${truetovrai(element.remoteLesson)} \nDe : <t:${new Date(element.from).getTime()/1000}> Jusqu'à : <t:${new Date(element.to).getTime()/1000}>`)
+
+                await dscsend(config.group[groupe].timetables, { embeds: [emebededs] })
+                lasttimes = new Date(element.to).getTime()/1000
+            }
+          });
+        }
+      },
+      null,
+      true,
+      'Europe/Paris'
+    );
+
+    // Schedule task for "Devoirs"
+    new CronJob(
+      '0 17 23 * * 1-5',
+      async function() {
+        for (let groupe = 1; groupe < 3; groupe++) {
+          await dscsend(config.group[groupe].homeworks, { content: `Envoi des devoirs pour le groupe ${groupe}` })
+          hwjson = await gethomeworks(groupe)
+          hwjson.forEach(async element => {
+            if (element.files[0]){
+              urls = ""
+              element.files.forEach(element => {
+                urls += `[${element.name}](${element.url})\n`
+              })
+            }
+            const emebededs = new EmbedBuilder()
+            .setColor(hexstrtohexint(element.color))
+            .setTitle(element.subject)
+            .setDescription(`Description : ${element.description} \nA rendre pour le : <t:${new Date(element.for).getTime()/1000}:D> \nDonné le : <t:${new Date(element.givenAt).getTime()/1000}:D>`)
+            if (element.files[0]){
+              emebededs.addFields({ name: "Fichiers : ", value: urls, inline: false })
+            }
+
+            await dscsend(config.group[groupe].homeworks, { embeds: [emebededs] })
+          });
+        }
+      },
+      null,
+      true,
+      'Europe/Paris'
+    );
   });
 
   // Code a exec en fonction des commandes
@@ -298,8 +360,7 @@ async function mmain(){
         }
         interaction.channel.send({ embeds: [menuembed] });
       }
-
-      client.user.setStatus("idle");
+      client.user.setPresence({ activities: [{ name: 'enzomtpyt.github.io' }], status: 'idle' });
   });
 
   // Définitions des commandes
