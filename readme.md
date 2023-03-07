@@ -34,6 +34,7 @@ git clone https://github.com/enzomtpYT/Pronote_Bot-NodeJS.git
     "pronoteurl": "YOUR_PRONOTE_URL",
     "discord": {
         "discordtoken": "YOUR_DISCORD_TOKEN",
+        "appID": "YOUR_DISCORD_APP_ID",
         "sendmenu": true,
         "menuchannel": "CHANNEL_TO_SEND_MENU"
     },

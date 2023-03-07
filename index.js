@@ -415,7 +415,7 @@ async function mmain(){
     try {
       logger('Started refreshing application (/) commands.');
 
-      await rest.put(Routes.applicationCommands('952940413088583751'), { body: commands });
+      await rest.put(Routes.applicationCommands(config.discord.appID), { body: commands });
 
       logger('Successfully reloaded application (/) commands.');
     } catch (error) {
