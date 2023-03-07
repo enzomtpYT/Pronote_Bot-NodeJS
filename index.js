@@ -224,7 +224,7 @@ async function mmain(){
 
     // Schedule task for "Devoirs"
     new CronJob(
-      '0 17 23 * * 1-5',
+      '0 45 15 * * 0-5',
       async function() {
         for (let groupe = 1; groupe < 3; groupe++) {
           await dscsend(config.group[groupe].homeworks, { content: `Envoi des devoirs pour le groupe ${groupe}` })

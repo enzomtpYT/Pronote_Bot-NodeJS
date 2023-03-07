@@ -1,9 +1,7 @@
 {
-    // This is an example file, enter your config then delete this line
     "pronoteurl": "YOUR_PRONOTE_URL",
     "discord": {
         "discordtoken": "YOUR_DISCORD_TOKEN",
-        "guildid": [YOUR_GUILD_ID],
         "sendmenu": true,
         "menuchannel": "CHANNEL_TO_SEND_MENU"
     },
