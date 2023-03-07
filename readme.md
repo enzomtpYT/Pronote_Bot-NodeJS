@@ -66,12 +66,12 @@ node index.js
 Commands :
 
  - [x]  Timetables ( With cancelled classes )
- - [ ]  Homeworks
+ - [x]  Homeworks
  
  Auto messages (DM or Channel) :
  
- - [ ]  Timetables ( With cancelled classes ) every morning
- - [ ]  Homeworks every afternoon
+ - [x]  Timetables ( With cancelled classes ) every morning
+ - [x]  Homeworks every afternoon
 
 ## License
 
